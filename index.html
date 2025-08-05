@@ -63,7 +63,7 @@
   </div>
 
   <script>
-    const socket = new WebSocket('ws://<SERVER_IP>:3000/ws');
+    const socket = new WebSocket('ws://10.136.92.32:3000/ws');
     socket.addEventListener('open',  ()=> console.log('▶ WS open'));
     socket.addEventListener('message', e => console.log('↔', e.data));
 
