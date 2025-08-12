@@ -62,7 +62,7 @@
     </label>
   </div>
 
-  <script>
+  <!-- <script>
     const socket = new WebSocket('ws://10.136.92.32:3000/ws');
     socket.addEventListener('open',  ()=> console.log('▶ WS open'));
     socket.addEventListener('message', e => console.log('↔', e.data));
@@ -75,6 +75,44 @@
           body: { type:"digitalWrite", pin:2, value: val }
         }));
       });
-  </script>
+  </script> -->
+
+<script>
+  // Read host/port from the URL, or fall back to sensible defaults.
+  const params = new URLSearchParams(location.search);
+  const HOST = params.get('host') || '172.20.10.3';   // iPhone hotspot typical server IP
+  const PORT = params.get('port') || '3000';
+  const PATH = '/ws';
+
+  // Use wss when the page is served over https (mixed-content rules).
+  const WS_SCHEME = (location.protocol === 'https:') ? 'wss' : 'ws';
+
+  let socket;
+  connect();
+
+  function connect() {
+    socket = new WebSocket(`${WS_SCHEME}://${HOST}:${PORT}${PATH}`);
+
+    socket.addEventListener('open', () => console.log('✓ WS open'));
+    socket.addEventListener('message', e => console.log('↲', e.data));
+    socket.addEventListener('error', e => console.log('WS error', e));
+    socket.addEventListener('close', () => {
+      console.log('WS closed – retrying in 1s');
+      setTimeout(connect, 1000); // simple auto-reconnect
+    });
+  }
+
+  document.getElementById('MyToggle')
+    .addEventListener('change', function () {
+      const val = this.checked ? 1 : 0;
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          action: "msg", type: "cmd",
+          body: { type: "digitaWrite", pin: 2, value: val } // matches your ESP32 handler
+        }));
+      }
+    });
+</script>
+
 </body>
 </html>
